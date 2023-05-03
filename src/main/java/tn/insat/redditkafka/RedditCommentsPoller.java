@@ -46,6 +46,7 @@ public class RedditCommentsPoller {
     }
 
     private void poll() {
+        System.out.println("------------------------------------------------------------");
         System.out.println("Polling...");
         try {
             RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
@@ -60,7 +61,6 @@ public class RedditCommentsPoller {
                     maxTimestamp = (int) Math.floor(comment.data.created);
                 }
             }
-            System.out.println("------------------------------------------------------------");
             System.out.println("Got " + filteredComments.size() + " new comments");
             lastTimestamp = maxTimestamp;
             System.out.println("Last timestamp: " + lastTimestamp);
