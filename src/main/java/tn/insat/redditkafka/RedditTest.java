@@ -90,7 +90,8 @@ public class RedditTest {
     public static void main(String[] args) {
 
         parseArgs(args);
-
+        System.out.println("Running with topicName: " + topicName + ", pollingInterval: " + POLLING_INTERVAL + ", lastTimestamp: " + lastTimestamp + ", maxTime: " + maxTime + ", withKafka: " + withKafka);
+        
         if (withKafka) {
             producer = makeProducer();
         }
