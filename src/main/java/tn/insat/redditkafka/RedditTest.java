@@ -1,19 +1,17 @@
 package tn.insat.redditkafka;
 
-import org.apache.hadoop.util.Time;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Instant;
 import java.util.Properties;
 
 public class RedditTest {
     static Producer<String, String> producer = null;
     static String topicName = null;
     static int POLLING_INTERVAL = 1000;
-    static long lastTimestamp = Time.now();
+    static long lastTimestamp = Instant.now().toEpochMilli();
     static boolean withKafka = false;
     static int maxTime = 0;
 
@@ -38,7 +36,7 @@ public class RedditTest {
         if (args.length > 2) {
             try {
                 if (args[2].equals("now")) {
-                    lastTimestamp = Time.now();
+                    lastTimestamp = Instant.now().toEpochMilli();
                 } else {
                     lastTimestamp = Long.parseLong(args[2]);
                 }
@@ -54,7 +52,7 @@ public class RedditTest {
                 System.out.println("Invalid max time, using default (0)");
             }
         }
-        
+
         if (args.length > 4 && args[4].equals("--with-kafka")) {
             withKafka = true;
         }

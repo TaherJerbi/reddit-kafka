@@ -6,16 +6,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.apache.hadoop.util.Time;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import java.time.Instant;
 
 public class RedditCommentsPoller {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Producer<String, String> producer;
     private int POLLING_INTERVAL = 1000;
-    private long lastTimestamp = Time.now();
+    private long lastTimestamp = Instant.now().toEpochMilli();
     private String topicName = "reddit-new-comments";
 
 
@@ -72,7 +72,7 @@ public class RedditCommentsPoller {
                 String line = comment.data.id + "," + comment.data.parent_id + ",\"" + comment.data.body + "\"," + comment.data.subreddit + "," + comment.data.created;
 
                 if (producer != null) {
-                    producer.send(new ProducerRecord<String, String>("reddit-new-comments", line));
+                    producer.send(new ProducerRecord<String, String>(topicName, line));
                     System.out.println("Sent to Kafka ✅");
                 }
                 System.out.println("> " + line);
