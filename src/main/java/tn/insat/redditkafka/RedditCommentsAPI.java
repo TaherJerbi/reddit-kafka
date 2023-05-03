@@ -26,8 +26,7 @@ public class RedditCommentsAPI {
 
         String jsonResponse = response.toString();
         // Handle the JSON response here as needed
-
-        System.out.println("Got Response : " + jsonResponse);
+        
         return jsonResponse;
     }
 
