@@ -16,6 +16,7 @@ public class RedditCommentsPoller {
     private final Producer<String, String> producer;
     private int POLLING_INTERVAL = 1000;
     private long lastTimestamp = Time.now();
+    private String topicName = "reddit-new-comments";
 
 
     public RedditCommentsPoller() {
@@ -37,6 +38,13 @@ public class RedditCommentsPoller {
         this.lastTimestamp = lastTimestamp;
     }
 
+    public RedditCommentsPoller(Producer<String, String> producer, int pollingInterval, long lastTimestamp, String topicName) {
+        this.producer = producer;
+        this.POLLING_INTERVAL = pollingInterval;
+        this.lastTimestamp = lastTimestamp;
+        this.topicName = topicName;
+    }
+
     private void poll() {
         try {
             RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
@@ -54,6 +62,10 @@ public class RedditCommentsPoller {
             System.out.println("Got " + filteredComments.size() + " new comments");
             lastTimestamp = maxTimestamp;
             System.out.println("Last timestamp: " + lastTimestamp);
+
+            if (producer == null)
+                System.out.println("No producer, not sending to Kafka");
+
             for (RedditComment comment : filteredComments) {
                 // comment_id, comment_parent_id, comment_body and subreddit
 
@@ -61,6 +73,7 @@ public class RedditCommentsPoller {
 
                 if (producer != null) {
                     producer.send(new ProducerRecord<String, String>("reddit-new-comments", line));
+                    System.out.println("Sent to Kafka ✅");
                 }
                 System.out.println("> " + line);
             }
