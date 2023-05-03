@@ -25,6 +25,8 @@ public class RedditTest {
             return;
         }
 
+        topicName = args[0];
+
         if (args.length > 1) {
             try {
                 POLLING_INTERVAL = Integer.parseInt(args[1]);
@@ -91,7 +93,7 @@ public class RedditTest {
 
         parseArgs(args);
         System.out.println("Running with topicName: " + topicName + ", pollingInterval: " + POLLING_INTERVAL + ", lastTimestamp: " + lastTimestamp + ", maxTime: " + maxTime + ", withKafka: " + withKafka);
-        
+
         if (withKafka) {
             producer = makeProducer();
         }
