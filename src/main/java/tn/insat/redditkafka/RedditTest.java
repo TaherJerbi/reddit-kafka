@@ -46,7 +46,7 @@ public class RedditTest {
 //        Producer<String, String> producer = new KafkaProducer
 //                <String, String>(props);
 
-        RedditCommentsPoller poller = new RedditCommentsPoller(null, 3000));
+        RedditCommentsPoller poller = new RedditCommentsPoller(null, 3000);
 
         poller.start(10000);
 
