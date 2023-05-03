@@ -66,8 +66,8 @@ public class RedditCommentData {
     public String subreddit_name_prefixed;
     public String author_flair_text;
     public List<Object> treatment_tags;
-    public double created;
-    public double created_utc;
+    public long created;
+    public long created_utc;
     public List<String> awarders;
     public List<Object> all_awardings;
     public boolean locked;

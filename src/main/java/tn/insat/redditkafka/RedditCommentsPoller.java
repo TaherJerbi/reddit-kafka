@@ -6,44 +6,94 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.hadoop.util.Time;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 
 public class RedditCommentsPoller {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final KafkaProducer<String, String> producer;
-    private static final int POLLING_INTERVAL = 1000;
-    private int lastTimestamp = 0;
+    private final Producer<String, String> producer;
+    private int POLLING_INTERVAL = 1000;
+    private long lastTimestamp = Time.now();
 
-    public RedditCommentsPoller(KafkaProducer<String, String> producer) {
+
+    public RedditCommentsPoller() {
+        this.producer = null;
+    }
+
+    public RedditCommentsPoller(Producer<String, String> producer) {
         this.producer = producer;
     }
 
-    public void start() {
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
-                List<RedditComment> filteredComments = new ArrayList<RedditComment>();
-                int maxTimestamp = 0;
-                for (RedditComment comment : commentsResponse.data.children) {
-                    if (comment.data.created > lastTimestamp) {
-                        filteredComments.add(comment);
-                    }
-                    if (comment.data.created > maxTimestamp) {
-                        maxTimestamp = (int) Math.floor(comment.data.created);
-                    }
-                }
-                lastTimestamp = maxTimestamp;
+    public RedditCommentsPoller(Producer<String, String> producer, int pollingInterval) {
+        this.producer = producer;
+        this.POLLING_INTERVAL = pollingInterval;
+    }
 
-                for (RedditComment comment : filteredComments) {
-                    producer.send(new ProducerRecord<String, String>("reddit-new-comments", comment.data.body));
-                }
+    public RedditCommentsPoller(Producer<String, String> producer, int pollingInterval, long lastTimestamp) {
+        this.producer = producer;
+        this.POLLING_INTERVAL = pollingInterval;
+        this.lastTimestamp = lastTimestamp;
+    }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+    private void poll() {
+        try {
+            RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
+            List<RedditComment> filteredComments = new ArrayList<RedditComment>();
+            int maxTimestamp = 0;
+            for (RedditComment comment : commentsResponse.data.children) {
+                if (comment.data.created > lastTimestamp) {
+                    filteredComments.add(comment);
+                }
+                if (comment.data.created > maxTimestamp) {
+                    maxTimestamp = (int) Math.floor(comment.data.created);
+                }
             }
-        }, 0, POLLING_INTERVAL, TimeUnit.MILLISECONDS); // Poll every 1 minute, you can adjust this value as needed
+            System.out.println("------------------------------------------------------------");
+            System.out.println("Got " + filteredComments.size() + " new comments");
+            lastTimestamp = maxTimestamp;
+            System.out.println("Last timestamp: " + lastTimestamp);
+            for (RedditComment comment : filteredComments) {
+                // comment_id, comment_parent_id, comment_body and subreddit
+
+                String line = comment.data.id + "," + comment.data.parent_id + ",\"" + comment.data.body + "\"," + comment.data.subreddit + "," + comment.data.created;
+
+                if (producer != null) {
+                    producer.send(new ProducerRecord<String, String>("reddit-new-comments", line));
+                }
+                System.out.println("> " + line);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void start(int maxTime) {
+        // poll for new comments every minute
+        // until maxTime ms have passed
+        // if maxTime is 0, then poll indefinitely
+        final Runnable poller = new Runnable() {
+            public void run() {
+                poll();
+            }
+        };
+
+        scheduler.scheduleAtFixedRate(poller, 0, POLLING_INTERVAL, TimeUnit.MILLISECONDS);
+
+        if (maxTime == 0) {
+            return;
+        }
+        scheduler.schedule(new Runnable() {
+            public void run() {
+                scheduler.shutdown();
+            }
+        }, maxTime, TimeUnit.MILLISECONDS);
+    }
+
+    public void start() {
+        start(0);
     }
 
     public void stop() {
