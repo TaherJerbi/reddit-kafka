@@ -49,7 +49,7 @@ public class RedditCommentsPoller {
         System.out.println("Polling...");
         try {
             RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
-            
+            System.out.println("Got " + commentsResponse.data.children.size() + " comments");
             List<RedditComment> filteredComments = new ArrayList<RedditComment>();
             int maxTimestamp = 0;
             for (RedditComment comment : commentsResponse.data.children) {
