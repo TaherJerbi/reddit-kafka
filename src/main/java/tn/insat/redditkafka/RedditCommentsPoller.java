@@ -46,6 +46,7 @@ public class RedditCommentsPoller {
     }
 
     private void poll() {
+        System.out.println("Polling...");
         try {
             RedditCommentsReponse commentsResponse = RedditCommentsAPI.getComments(10); // or any other limit you prefer
             List<RedditComment> filteredComments = new ArrayList<RedditComment>();
