@@ -71,6 +71,9 @@ public class RedditCommentsPoller {
             for (RedditComment comment : filteredComments) {
                 // comment_id, comment_parent_id, comment_body and subreddit
 
+                // remove \n and \r from comment body
+                comment.data.body = comment.data.body.replace("\n", "").replace("\r", "");
+                
                 String line = comment.data.id + "," + comment.data.parent_id + ",\"" + comment.data.body + "\"," + comment.data.subreddit + "," + comment.data.created;
 
                 if (producer != null) {
