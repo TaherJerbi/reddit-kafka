@@ -65,7 +65,7 @@ public class RedditTest {
         Properties props = new Properties();
 
         // Assigner l'identifiant du serveur kafka
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", "kafka:9092");
 
         // Definir un acquittement pour les requetes du producteur
         props.put("acks", "all");
